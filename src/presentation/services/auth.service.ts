@@ -1,4 +1,4 @@
-import { bcryptAdapter } from "../../config";
+import { JwtAdapter, bcryptAdapter } from "../../config";
 import { UserModel } from "../../data";
 import { CustomError, LoginUserDto, RegisterUSerDto, UserEntity } from "../../domain";
 
@@ -39,17 +39,24 @@ export class AuthService  {
     }
 
     public async loginUser ( loginUserDto: LoginUserDto) {
+
         //findone para verificar si existe
         const user = await UserModel.findOne({ email: loginUserDto.email });
         if (!user) throw CustomError.badRequest('Email not exist');
+
         //isMatch... bycryp compaer(password, fsadfsdfge8df78dfgs)
         const isMatching = bcryptAdapter.compare( loginUserDto.password, user.password );
         if (!isMatching) throw CustomError.badRequest('Password is not valid');
 
         const {password, ...userEntity} = UserEntity.fromObject( user );
+
+
+        const token = await JwtAdapter.generateToken({ id:user.id, email:user.email});
+        if ( !token ) throw CustomError.internalServer('Error While creating JWT');
+
         return {
             user: userEntity,
-            token: 'ABC'
+            token: token,
         }
     }
 }
