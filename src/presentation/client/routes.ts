@@ -1,5 +1,6 @@
 import { Router } from 'express';
 import { ClientController } from './controller';
+import { AuthMiddeleware } from '../middlewares/auth.middleware';
 
 
 
@@ -13,8 +14,10 @@ export class ClientRoutes {
     const controller = new ClientController();    
 
     // Definir las rutas
-    router.post('/', controller.createClient);
-    router.get('/', controller.getClients);
+    router.get('/',  controller.getClients);
+    router.post('/', [ AuthMiddeleware.validateJWT ], controller.createClient);
+
+   
 
 
 
