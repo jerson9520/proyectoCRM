@@ -5,7 +5,8 @@ const clientSchema = new mongoose.Schema({
   name: {
     type: String,
     required: [true, 'Name is required'],
-    trim: true // Elimina espacios en blanco al inicio y final del string
+    unique: true,
+    // trim: true,  Elimina espacios en blanco al inicio y final del string
   },
   address: {
     type: String,
