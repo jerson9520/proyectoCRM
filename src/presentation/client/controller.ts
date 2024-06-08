@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import { CreateClientDto, CustomError } from "../../domain";
+import { CreateClientDto, CustomError, PaginationDto } from "../../domain";
 import { ClientService } from "../services/client.service";
 
 export class ClientController {
@@ -28,9 +28,16 @@ export class ClientController {
     }
 
     getClients = (req: Request, res: Response) => {  
-        this.clientService.getClients()
+
+        const { page= 1, limit= 10} = req.query;
+        const [ error, paginationDto] = PaginationDto.create( +page, +limit);
+            if ( error ) return res.status(400).json({ error});
+        
+        this.clientService.getClients( paginationDto!)
             .then( clients => res.json( clients ))
             .catch( error => this.handleError( error, res ));
     }
+
+
 
 }

@@ -1,5 +1,5 @@
 import { ClientModel } from "../../data";
-import { CreateClientDto, CustomError, UserEntity } from "../../domain";
+import { CreateClientDto, CustomError, PaginationDto, UserEntity } from "../../domain";
 
 export class ClientService {
     constructor(){} 
@@ -32,18 +32,41 @@ export class ClientService {
         }
     }
 
-    async getClients() {
+    async getClients( paginationDto : PaginationDto) {
+
+        const { page, limit } = paginationDto;
+
 
         try {
-            const clients = await ClientModel.find();
 
-            return clients.map( client => ({
-                id: client.id,
-                name: client.name,
-                address: client.address,
-                email: client.email,
-                phone: client.phone,
-            }))
+            // const total = await ClientModel.countDocuments();
+            // const clients = await ClientModel.find()
+            //     .skip( ( page - 1 ) * limit)
+            //     .limit ( limit )
+
+            const [total, clients] = await Promise.all([
+                await ClientModel.countDocuments(),
+                ClientModel.find()
+                .skip( ( page - 1 ) * limit)
+                .limit ( limit )  
+            ])
+
+            return {
+                page: page,
+                limit: limit,
+                total: total,
+                next: `/api/clients?page=${ (page +1) }$limit=${ limit}`,
+                prev: (page -1 > 0) ?`/api/clients?page=${ (page -1) }$limit=${ limit}`: null,
+             
+
+                clients: clients.map( client => ({
+                    id: client.id,
+                    name: client.name,
+                    address: client.address,
+                    email: client.email,
+                    phone: client.phone,
+                }))
+            }
             
         } catch (error) {
             throw CustomError.internalServer('Internal Server Error')
